@@ -1,6 +1,6 @@
 // script.js - Interaction avec l'API TheMealDB
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => { 
     const categorySelect = document.getElementById("category-select");
     const areaSelect = document.getElementById("area-select");
     const ingredientInput = document.getElementById("ingredient-input");
@@ -86,14 +86,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await fetchData(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
       if (!data) return;
       const meal = data.meals[0];
-
+    
       const ingredientsList = Array.from({ length: 20 }, (_, i) => {
         const ing = meal[`strIngredient${i + 1}`];
         const qty = meal[`strMeasure${i + 1}`];
         return ing && ing.trim() ? `<li class="ingredient" data-ingredient="${ing}">${qty} ${ing}</li>` : "";
       }).join("");
-
-      const html = `
+    
+      recipeContent.innerHTML = `
         <div class="text-end mb-3">
           <button class="btn btn-sm bg-gris text-white rounded-btn" id="btn-back">← Retour</button>
         </div>
@@ -110,18 +110,21 @@ document.addEventListener("DOMContentLoaded", () => {
             <ul>${ingredientsList}</ul>
           </div>
         </div>`;
-
-      // SPA : remplacement total du contenu par les détails
-      const main = document.querySelector("main");
-      main.innerHTML = `<section id="recipe-details">${html}</section>`;
-
+    
+      document.getElementById("search-form").closest("section").classList.add("d-none");
+      resultsContainer.classList.add("d-none");
+      recipeDetails.classList.remove("d-none");
+    
       addHoverTooltips();
-
-      // bouton retour
+    
       document.getElementById("btn-back").addEventListener("click", () => {
-        window.location.reload(); // simple SPA reset, ou tu peux restaurer dynamiquement le DOM si besoin
+        recipeDetails.classList.add("d-none");
+        document.getElementById("search-form").closest("section").classList.remove("d-none");
+        resultsContainer.classList.remove("d-none");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
     }
+    
 
     function addHoverTooltips() {
       document.querySelectorAll(".ingredient").forEach(el => {
