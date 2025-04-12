@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const recipeContent = document.getElementById("recipe-content");
 
   //  Constante de base pour l'URL de l'API TheMealDB
-  const BASE_URL = "https://www.themealdb.com/api/json/v1/1";
+  const BASE_URL = "${BASE_URL}";
 
   loadCategories();
   loadAreas();
@@ -71,36 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function renderMeals(meals) {
-    // Fonction d'affichage des résultats de recettes dans la grille
-    // On vide le conteneur de résultats avant de le remplir avec les nouvelles recettes
-    resultsContainer.innerHTML = "";
-
-    // On parcourt chaque recette du tableau reçu
-    meals.forEach((meal) => {
-      // Création d'une colonne Bootstrap responsive
-      const col = document.createElement("div");
-      col.className = "col-6 col-md-3"; // 2 colonnes en mobile, 4 colonnes par ligne en desktop
-
-      // Insertion dynamique du HTML de la carte recette dans la colonne
-      col.innerHTML = `
-      <div class="card h-100" data-id="${meal.idMeal}">
-        <img src="${meal.strMealThumb}" class="card-img-top" alt="${meal.strMeal}">
-        <div class="card-body">
-          <h5 class="card-title">${meal.strMeal}</h5>
-        </div>
-      </div>`;
-
-      // Ajout d’un gestionnaire de clic sur la carte pour charger les détails de la recette
-      col
-        .querySelector(".card")
-        .addEventListener("click", () => loadMealDetail(meal.idMeal));
-
-      // Ajout de la colonne (et donc de la carte) au conteneur de résultats
-      resultsContainer.appendChild(col);
-    });
-  }
-
   async function searchMeals() {
     // Fonction déclenchée automatiquement à chaque modification d’un filtre
     // On récupère la valeur des trois champs de filtre (catégorie, zone/pays, ingrédient)
@@ -114,19 +84,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // Si l'utilisateur a sélectionné une catégorie valide, on ajoute l’URL correspondante
     if (category && category !== "Catégorie") {
       urls.push(
-        `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
+        `${BASE_URL}/filter.php?c=${category}`
       );
     }
 
     // Idem pour la zone/pays
     if (area && area !== "Pays") {
-      urls.push(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${area}`);
+      urls.push(`${BASE_URL}/filter.php?a=${area}`);
     }
 
     // Et pour l’ingrédient (si l’input n’est pas vide)
     if (ingredient) {
       urls.push(
-        `https://www.themealdb.com/api/json/v1/1/filter.php?i=${ingredient}`
+        `${BASE_URL}/filter.php?i=${ingredient}`
       );
     }
 
@@ -168,20 +138,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Fonction qui récupère les données d'une recette à partir de son ID
-async function loadMealDetail(id) {
-  const data = await fetchData(`${BASE_URL}/lookup.php?i=${id}`);
-  if (!data) return;
-  const meal = data.meals[0]; // On prend la première (et unique) recette retournée
+  async function loadMealDetail(id) {
+    const data = await fetchData(`${BASE_URL}/lookup.php?i=${id}`);
+    if (!data) return;
+    const meal = data.meals[0]; // On prend la première (et unique) recette retournée
 
-  renderMealDetail(meal); // On délègue l'affichage
-}
+    renderMealDetail(meal); // On délègue l'affichage
+  }
 
-// Fonction qui affiche les détails d'une recette dans le DOM
-function renderMealDetail(meal) {
-  const ingredientsList = generateIngredientsList(meal);
+  function renderMeals(meals) {
+    // Fonction d'affichage des résultats de recettes dans la grille
+    // On vide le conteneur de résultats avant de le remplir avec les nouvelles recettes
+    resultsContainer.innerHTML = "";
 
-  recipeContent.innerHTML = `
+    // On parcourt chaque recette du tableau reçu
+    meals.forEach((meal) => {
+      // Création d'une colonne Bootstrap responsive
+      const col = document.createElement("div");
+      col.className = "col-6 col-md-3"; // 2 colonnes en mobile, 4 colonnes par ligne en desktop
+
+      // Insertion dynamique du HTML de la carte recette dans la colonne
+      col.innerHTML = `
+      <div class="card h-100" data-id="${meal.idMeal}">
+        <img src="${meal.strMealThumb}" class="card-img-top" alt="${meal.strMeal}">
+        <div class="card-body">
+          <h5 class="card-title">${meal.strMeal}</h5>
+        </div>
+      </div>`;
+
+      // Ajout d’un gestionnaire de clic sur la carte pour charger les détails de la recette
+      col
+        .querySelector(".card")
+        .addEventListener("click", () => loadMealDetail(meal.idMeal));
+
+      // Ajout de la colonne (et donc de la carte) au conteneur de résultats
+      resultsContainer.appendChild(col);
+    });
+  }
+
+  function renderMealDetail(meal) {
+    const ingredientsList = generateIngredientsList(meal);
+
+    recipeContent.innerHTML = `
     <div class="text-end mb-3">
       <button class="btn btn-sm bg-gris text-white rounded-btn" id="btn-back">← Retour</button>
     </div>
@@ -199,24 +197,31 @@ function renderMealDetail(meal) {
       </div>
     </div>`;
 
-  // Gestion d'affichage SPA : masquer recherche et résultats, afficher détails
-  document.getElementById("search-form").closest("section").classList.add("d-none");
-  resultsContainer.classList.add("d-none");
-  recipeDetails.classList.remove("d-none");
+    // Gestion d'affichage SPA : masquer recherche et résultats, afficher détails
+    document
+      .getElementById("search-form")
+      .closest("section")
+      .classList.add("d-none");
+    resultsContainer.classList.add("d-none");
+    recipeDetails.classList.remove("d-none");
 
-  // Bouton retour
-  document.getElementById("btn-back").addEventListener("click", () => {
-    recipeDetails.classList.add("d-none");
-    document.getElementById("search-form").closest("section").classList.remove("d-none");
-    resultsContainer.classList.remove("d-none");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+    // Bouton retour
+    document.getElementById("btn-back").addEventListener("click", () => {
+      recipeDetails.classList.add("d-none");
+      document
+        .getElementById("search-form")
+        .closest("section")
+        .classList.remove("d-none");
+      resultsContainer.classList.remove("d-none");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
-  // Tooltips Bootstrap
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  tooltipTriggerList.forEach((el) => new bootstrap.Tooltip(el));
-}
-
+    // Tooltips Bootstrap
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]'
+    );
+    tooltipTriggerList.forEach((el) => new bootstrap.Tooltip(el));
+  }
 
   function generateIngredientsList(meal) {
     // Fonction qui génère une liste HTML <li> d'ingrédients avec tooltip image pour une recette donnée
