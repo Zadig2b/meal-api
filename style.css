@@ -9,6 +9,18 @@ body {
   align-items: center;
 }
 
+#logo {
+  max-width: 150px;
+  border-radius: 50%;
+  border: 5px solid #9E9E9E;
+}
+
+@media (max-width: 576px) {
+  #logo {
+    max-width: 80px;
+    border-width: 3px;
+  }
+}
 .container {
   background-color: #fff;
 }

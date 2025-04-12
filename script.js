@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const recipeContent = document.getElementById("recipe-content");
 
   //  Constante de base pour l'URL de l'API TheMealDB
-  const BASE_URL = "${BASE_URL}";
+  const BASE_URL = "https://www.themealdb.com/api/json/v1/1";
 
   loadCategories();
   loadAreas();
