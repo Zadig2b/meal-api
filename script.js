@@ -1,41 +1,26 @@
-// script.js - Interaction avec l'API TheMealDB
-
-// On attend que tout le DOM soit entièrement chargé avant d’exécuter notre code
 document.addEventListener("DOMContentLoaded", () => {
-  //  Sélection du menu déroulant des catégories
+  
+  // définition des éléments du DOM
   const categorySelect = document.getElementById("category-select");
-
-  // Lorsqu'on change la catégorie, on relance la recherche de recettes
   categorySelect.addEventListener("change", searchMeals);
-
-  //  Sélection du menu déroulant des pays/zones
   const areaSelect = document.getElementById("area-select");
-
-  // Idem, lorsqu'on change de zone, on déclenche la recherche
   areaSelect.addEventListener("change", searchMeals);
 
-  //  Champ texte pour rechercher par ingrédient
   const ingredientInput = document.getElementById("ingredient-input");
-  let ingredientTimeout; // Permet de limiter les appels à l’API pendant la saisie
+  let ingredientTimeout; 
 
-  // Lorsqu’on tape dans le champ, on attend 500ms après la dernière frappe pour lancer la recherche
   ingredientInput.addEventListener("input", () => {
-    clearTimeout(ingredientTimeout); // Réinitialise le timer à chaque frappe
-    ingredientTimeout = setTimeout(searchMeals, 500); // Lance la recherche si l'utilisateur arrête de taper
+    clearTimeout(ingredientTimeout); 
+    ingredientTimeout = setTimeout(searchMeals, 500); 
   });
 
-  //  Conteneur HTML où s'afficheront les cartes de résultats, c'est à dire la liste de recettes
   const resultsContainer = document.getElementById("results");
-
-  //  Section contenant les détails d'une recette sélectionnée
   const recipeDetails = document.getElementById("recipe-details");
-
-  //  Bloc dans lequel on injecte dynamiquement le contenu de la recette détaillée
   const recipeContent = document.getElementById("recipe-content");
 
-  //  Constante de base pour l'URL de l'API TheMealDB
   const BASE_URL = "https://www.themealdb.com/api/json/v1/1";
 
+  // chargement des données des sélecteurs
   loadCategories();
   loadAreas();
 
@@ -52,8 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Fonctions qui appellent l’API pour remplir les <select>
-  //  Chargement des filtres (catégories et zones/pays)
+  // Fonctions qui appellent l’API pour remplir les <select>  (catégories et zones/pays)
 
   async function loadCategories() {
     const data = await fetchData(`${BASE_URL}/list.php?c=list`);
@@ -107,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const results = await Promise.all(urls.map((url) => fetchData(url)));
 
     // On filtre les résultats valides et on ne garde que les tableaux `meals`
-    const mealsArrays = results.filter((r) => r && r.meals).map((r) => r.meals);
+    const mealsArrays = results.map((r) => r.meals);
     console.log(mealsArrays);
 
     // Si aucun résultat valide, on affiche un message d’erreur à l’utilisateur
@@ -147,17 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderMeals(meals) {
-    // Fonction d'affichage des résultats de recettes dans la grille
-    // On vide le conteneur de résultats avant de le remplir avec les nouvelles recettes
     resultsContainer.innerHTML = "";
-
-    // On parcourt chaque recette du tableau reçu
     meals.forEach((meal) => {
-      // Création d'une colonne Bootstrap responsive
       const col = document.createElement("div");
       col.className = "col-6 col-md-3"; // 2 colonnes en mobile, 4 colonnes par ligne en desktop
-
-      // Insertion dynamique du HTML de la carte recette dans la colonne
       col.innerHTML = `
       <div class="card h-100" data-id="${meal.idMeal}">
         <img src="${meal.strMealThumb}" class="card-img-top" alt="${meal.strMeal}">
@@ -165,20 +142,15 @@ document.addEventListener("DOMContentLoaded", () => {
           <h5 class="card-title">${meal.strMeal}</h5>
         </div>
       </div>`;
-
-      // Ajout d’un gestionnaire de clic sur la carte pour charger les détails de la recette
       col
         .querySelector(".card")
         .addEventListener("click", () => loadMealDetail(meal.idMeal));
-
-      // Ajout de la colonne (et donc de la carte) au conteneur de résultats
       resultsContainer.appendChild(col);
     });
   }
 
   function renderMealDetail(meal) {
     const ingredientsList = generateIngredientsList(meal);
-
     recipeContent.innerHTML = `
     <div class="text-end mb-3">
       <button class="btn btn-sm bg-gris text-white rounded-btn" id="btn-back">← Retour</button>
@@ -251,6 +223,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Si aucun ingrédient est défini à cette position, on retourne une chaîne vide
       return "";
-    }).join(""); // On convertit le tableau de <li> en une seule chaîne HTML
+    }); // On convertit le tableau de <li> en une seule chaîne HTML
   }
 });
